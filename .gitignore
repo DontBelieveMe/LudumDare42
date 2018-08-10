@@ -1,0 +1,9 @@
+Build/
+Platform/
+
+# Qt Creator 
+CMakeLists.txt.user
+
+# Vim files
+[._]*.s[a-w][a-z]
+[._]s[a-w][a-z]
