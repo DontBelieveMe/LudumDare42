@@ -29,7 +29,7 @@ namespace ld42 {
 			ld42::global::WindowWidth = window->Width() / 4.0f;
 			ld42::global::WindowHeight = window->Height() / 4.0f;
 
-			window->SetClearColor(gene::graphics::Color::Black/*gene::graphics::Color(79, 87, 99, 255)*/);
+			window->SetClearColor(graphics::Color::Black);
 
 			m_2drenderer.Init(Matrix4::Orthographic(window->Width(), 0.f, 0.f, window->Height(), 100.f, -1.0f));
 
@@ -40,13 +40,14 @@ namespace ld42 {
 			ld42::global::TilesSheet = new ld42::Spritesheet;
 			ld42::global::TilesSheet->Init("Data/Textures/Tiles.png");
 
-			ld42::global::ThePlayer = new ld42::Player;
 
 			m_Tilemap.Load("Data/Levels/Level1.png");
 			ld42::global::ActiveLevel = &m_Tilemap;
 
 			ld42::global::MainCamera = new ld42::Camera;
 
+			ld42::global::ThePlayer = new ld42::Player;
+			
 			Array<graphics::Light*> lights;
 			lights.push_back(&ld42::config::PlayerLight);
 			m_2drenderer.LoadLights(lights);
@@ -87,6 +88,10 @@ namespace ld42 {
 				if (ImGui::Button("Reload Level")) {
 					ld42::CopyAssetsDirectory("Levels/");
 					m_Tilemap.Load("Data/Levels/Level1.png");
+				}
+
+				if (ImGui::Button("Reset player to spawn")) {
+					global::ThePlayer->Position = Vector3(config::PlayerSpawnPoint.X, config::PlayerSpawnPoint.Y, 0.0f);
 				}
 				ImGui::Separator();
 				ImGui::Text("Game");

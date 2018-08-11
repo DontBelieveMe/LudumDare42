@@ -6,9 +6,11 @@ using namespace gene;
 Player::Player() {
 	config::PlayerLight.Colour = graphics::Color(234, 121, 42, 255);
 	config::PlayerLight.Position = Position;
-	config::PlayerLight.Size = 510;
+	config::PlayerLight.Size = 230.000;
 	config::PlayerLight.Intensity = 3.f;
 	config::PlayerLight.Falloff = .9f;
+
+	Position = Vector3(config::PlayerSpawnPoint.X, config::PlayerSpawnPoint.Y, 0.0f);
 }
 
 void Player::Draw(graphics::Renderer2D* renderer) {
@@ -47,24 +49,21 @@ void Player::Tick(const platform::GameTime& time) {
 
 	Vector3 potPos = Position + Velocity * time.DeltaInMilliSeconds();
 
-	if (potPos.Y + 16 > global::WindowHeight) {
-		Velocity.Y = 0.0f;
-		OnGround = true;
-	}
-
 	Vector3 halfSize(8.0f, 8.0f, 8.0f);
 	Position = Position + Velocity * time.DeltaInMilliSeconds();
+	ResolveCollisions();
+	
 	config::PlayerLight.Position = Position + halfSize;
 	config::PlayerLight.Position.X *= 4.f;
+	config::PlayerLight.Position.Y -= 16.f;
 	config::PlayerLight.Position.Y *= 4.f;
 
 	auto camera = global::MainCamera;
 	float camWidth = global::Window->Width();
+	float camHeight = global::Window->Height();
 
-	const float camDeadZone = 400;
-	camera->Position.X = Position.X * 4.f - (camWidth / 2) + 32;	
-
-	ResolveCollisions();
+	camera->Position.X = Position.X * 4.f - (camWidth / 2) + 32;
+	camera->Position.Y = Position.Y * 4.f - (camHeight / 2) + 32;
 }
 
 void Player::ResolveCollisions() 
@@ -74,7 +73,10 @@ void Player::ResolveCollisions()
 
 	for (int y = 0; y < global::ActiveLevel->h; ++y) {
 		for (int x = 0; x < global::ActiveLevel->w; ++x) {
-			if (global::ActiveLevel->Tiles[x + y * global::ActiveLevel->w]) {
+			unsigned int tileID = global::ActiveLevel->Tiles[x + y * global::ActiveLevel->w];
+			Tile& tile = global::TileTypes[tileID];
+
+			if (tileID != 0 && tile.Solid) {
 				Vector2 tilePos(x*tilesize, y*tilesize);
 
 				bool x1 = tilePos.X > Position.X + 16.f;

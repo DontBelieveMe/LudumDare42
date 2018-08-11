@@ -2,6 +2,7 @@
 
 #include <Platform/Window.h>
 #include <Math/Vector2.h>
+#include <Core/Array.h>
 
 #define TILE_SIZE 16.f;
 
@@ -10,6 +11,7 @@ namespace ld42 {
 	class Player;
 	class TileMap;
 	class Camera;
+	class Tile;
 
 	namespace global {
 		extern Spritesheet *TilesSheet;
@@ -24,6 +26,11 @@ namespace ld42 {
 		bool KeyDown(gene::input::Keys key);
 		bool AABBIntersection(const gene::graphics::AABBRectangle& a, const gene::graphics::AABBRectangle& b);
 
-		extern gene::Vector2i RED_TILE;	
+#define STONE_FLOOR_TOP_COL 0xFF0000FF
+#define STONE_FLOOR_BOTTOM_COL 0x630000FF
+#define SPAWN_POINT_COL 0xFFFF00FF
+#define WATER_TOP_COL 0x0094FFFF
+
+		extern gene::HashMap<unsigned int, Tile> TileTypes;
 	}
 }

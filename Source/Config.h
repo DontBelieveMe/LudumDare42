@@ -5,9 +5,10 @@
 namespace ld42 {
 	namespace config {
 		extern float Gravity;
-		extern float PlayerSpeed ;
+		extern float PlayerSpeed;
 		extern float JumpSpeed;
 		extern float AmbientLight;
+		extern gene::Vector2 PlayerSpawnPoint;
 		extern gene::graphics::Light PlayerLight;
 
 		void ImGuiConfigEdit();
