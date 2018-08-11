@@ -17,8 +17,15 @@ include_directories(${GeneLibDir}/Dependencies/FreeType/include)
 set(Source
 	Source/Main.cc
 	Source/Utils.cc
+	Source/Global.cc
 
 	Source/Utils.h
+	Source/Camera.h
+	Source/Global.h
+	Source/Config.h
+	Source/Player.h
+	Source/Spritesheet.h
+	Source/TileMap.h
 )
 
 gene_add_target(${ProjectName} "${Source}")

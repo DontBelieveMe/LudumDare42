@@ -18,7 +18,7 @@ uniform mat4 u_View;
 
 void main()
 {
-	gl_Position     = u_View * u_Projection * vec4(in_Position, 1.0);
+	gl_Position     = u_Projection * u_View * vec4(in_Position, 1.0);
 	pass_Color      = in_Color;
 	pass_TextureUV  = in_TextureUV;
 	pass_SamplerIndex  = in_SamplerIndex;
