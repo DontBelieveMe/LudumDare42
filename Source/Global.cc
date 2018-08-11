@@ -49,6 +49,7 @@ gene::HashMap<unsigned int, Tile> global::TileTypes = {
 	{ WATER_TOP_COL, Tile(gene::Vector2i(0, 2), false,true) },
 	{ STONE_OVERHAND_RIGHT1, Tile(gene::Vector2i(2, 0), true, false)},
 	{ SWITCH_V_CLOSED, Tile(gene::Vector2i(1, 3), false, false) },
+	{ SWITCH_V_OPEN, Tile(gene::Vector2i(2, 3), false, false) },
 };
 
 bool global::KeyPressed(gene::input::Keys key) {
@@ -60,18 +61,15 @@ bool global::KeyDown(gene::input::Keys key) {
 	return global::Window->GetInputController()->GetKeyDevice()->IsKeyPressed(key);
 }
 
-bool global::AABBIntersection(const gene::graphics::AABBRectangle& a, const gene::graphics::AABBRectangle& b)
+bool global::Collision(gene::Vector2 aPos, gene::Vector2 aSize, gene::Vector2 bPos, gene::Vector2 bSize)
 {
-	using namespace gene;
+	bool x1 = bPos.X > aPos.X + aSize.X;
+	bool x2 = bPos.X + bSize.X < aPos.X;
 
-	Vector2 aPos = a.TopLeft;
-	Vector2 bPos = b.TopLeft;
+	bool y1 = bPos.Y > aPos.Y + aSize.Y;
+	bool y2 = bPos.Y + bSize.Y < aPos.Y;
 
-	Vector2 aSize = a.BottomRight - a.TopLeft;
-	Vector2 bSize = b.BottomRight - a.TopLeft;
-
-	return (abs(aPos.X - bPos.X) * 2 < (aSize.X + bSize.X)) &&
-		(abs(aPos.Y - bPos.Y) * 2 < (aSize.Y + bSize.Y));
+	return !(x1 || x2 || y1 || y2);
 }
 
 bool ld42::global::MouseClicked(gene::input::MouseButton button)

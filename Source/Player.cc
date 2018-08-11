@@ -22,12 +22,26 @@ void Player::Die()
 
 void Player::ThrowStone(float angle, float speed)
 {
+	if (CurrentStone) 
+		delete CurrentStone;
+	
 	CurrentStone = new Stone;
 	CurrentStone->Velocity = Vector2{
 		speed * Maths::Cos(Maths::ToRadians(angle)),
 		-(speed * Maths::Sin(Maths::ToRadians(angle)))
 	};
 	CurrentStone->Position = Vector2(Position.X, Position.Y+5);
+}
+
+platform::Timer lightOffTimer;
+float lightOffTime;
+float lightSize;
+void ld42::Player::TurnLightOff(float time)
+{
+	lightOffTime = time;	
+	lightOffTimer.Start();
+	lightSize = config::PlayerLight.Size;
+	config::PlayerLight.Size = 0.0f;
 }
 
 void Player::Draw(graphics::Renderer2D* renderer) {
@@ -46,6 +60,13 @@ void Player::Draw(graphics::Renderer2D* renderer) {
 float StoneForce = 0;
 
 void Player::Tick(const platform::GameTime& time) {
+	if (lightOffTimer.Running()) {
+		if (lightOffTimer.ElapsedTimeMs() > lightOffTime) {
+			lightOffTimer.Stop();
+			config::PlayerLight.Size = lightSize;
+		}
+	}
+
 	auto keyboard = global::Window->GetInputController()->GetKeyDevice();
 	auto mouse = global::Window->GetInputController()->GetMouseDevice();
 
@@ -53,6 +74,8 @@ void Player::Tick(const platform::GameTime& time) {
 		if(StoneForce < 10.f)
 			StoneForce += 0.1f;
 	}
+
+	global::MainCamera->Update();
 
 	if (global::MouseUp(input::MouseButton::Left)) {
 		float force = Maths::Map(StoneForce, 0.0f, 10.0f, 0.2f, 1.0f);
@@ -96,10 +119,10 @@ void Player::Tick(const platform::GameTime& time) {
 	}
 
 	if (true) {
-		if (keyboard->IsKeyPressed(input::Keys::RightArrow)) {
+		if (keyboard->IsKeyPressed(input::Keys::D)) {
 			Velocity.X = config::PlayerSpeed;
 		}
-		else if (keyboard->IsKeyPressed(input::Keys::LeftArrow)) {
+		else if (keyboard->IsKeyPressed(input::Keys::A)) {
 			Velocity.X = -config::PlayerSpeed;
 		}
 		else {
@@ -141,6 +164,17 @@ void Player::ResolveCollisions()
 			}
 
 			Vector2 tilePos(x*tilesize, y*tilesize);
+			if (CurrentStone)
+			{
+				if (tile.Solid) {
+					if (global::Collision(CurrentStone->Position, { 9, 7 }, tilePos, { 16,16 }))
+					{
+						delete CurrentStone;
+						CurrentStone = nullptr;
+					}
+				}
+			}
+
 
 			bool x1 = tilePos.X > Position.X + 16.f;
 			bool x2 = tilePos.X + 16.f < Position.X;
@@ -149,6 +183,7 @@ void Player::ResolveCollisions()
 			bool y2 = tilePos.Y + 16.f < Position.Y;
 
 			bool collision = !(x1 || x2 || y1 || y2);
+
 
 			if (collision) {
 				if (tile.KillsYou) {

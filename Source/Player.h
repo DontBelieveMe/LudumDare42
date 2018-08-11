@@ -33,7 +33,7 @@ namespace ld42 {
 		
 		void Die();
 		void ThrowStone(float angle, float speed);
-
+		void TurnLightOff(float time);
 		Vector3 Position;
 		Vector3 Velocity;
 

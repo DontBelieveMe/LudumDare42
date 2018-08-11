@@ -26,7 +26,7 @@ namespace ld42 {
 
 		bool KeyPressed(gene::input::Keys key);
 		bool KeyDown(gene::input::Keys key);
-		bool AABBIntersection(const gene::graphics::AABBRectangle& a, const gene::graphics::AABBRectangle& b);
+		bool Collision(gene::Vector2 aPos, gene::Vector2 aSize, gene::Vector2 bPos, gene::Vector2 bSize);
 
 		bool MouseClicked(gene::input::MouseButton button);
 		bool MouseUp(gene::input::MouseButton button);
@@ -38,6 +38,8 @@ namespace ld42 {
 #define WATER_TOP_COL 0x0094FFFF
 #define STONE_OVERHAND_RIGHT1 0xB6FF00FF
 #define SWITCH_V_CLOSED 0xFF00DCFF
+#define SWITCH_V_OPEN 0x7F006EFF
+
 		extern gene::HashMap<unsigned int, Tile> TileTypes;
 	}
 }

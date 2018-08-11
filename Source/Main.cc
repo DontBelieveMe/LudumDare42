@@ -60,7 +60,7 @@ namespace ld42 {
 		virtual void Tick(const gene::platform::GameTime& time) override {
 			auto keyboard = ld42::global::Window->GetInputController()->GetKeyDevice();
 			auto mouse = ld42::global::Window->GetInputController()->GetMouseDevice();
-
+			level1->Update(time);
 			ld42::global::ThePlayer->Tick(time);
 
 			memcpy(ld42::global::LastKeyState, keyboard->GetKeyMap(), 62256);
