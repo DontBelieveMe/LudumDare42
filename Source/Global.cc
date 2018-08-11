@@ -46,10 +46,21 @@ gene::input::MouseButton global::LastMouseButtonState = gene::input::MouseButton
 gene::HashMap<unsigned int, Tile> global::TileTypes = {
 	{ STONE_FLOOR_TOP_COL, Tile(gene::Vector2i(0, 0), true, false) },
 	{ STONE_FLOOR_BOTTOM_COL, Tile(gene::Vector2i(1, 0), true,false) },
-	{ WATER_TOP_COL, Tile(gene::Vector2i(0, 2), false,true) },
 	{ STONE_OVERHAND_RIGHT1, Tile(gene::Vector2i(2, 0), true, false)},
+	{ STONE_OVERHANG_LEFT1, Tile(gene::Vector2i(3, 0), true, false) },
+	{ STONE_OVERHANG_RIGHT2, Tile(gene::Vector2i(4, 0), true, false) },
+	{ STONE_OVERHANG_LEFT2, Tile(gene::Vector2i(5, 0), true, false) },
+
+	{ WATER_TOP_COL, Tile(gene::Vector2i(0, 2), false,true) },
+	{ WATER_TOP_COL2, Tile(gene::Vector2i(2, 2), false,true) },
+
+	{ WATER_BOTTOM_COL, Tile(gene::Vector2i(1, 2), false,true) },
+
 	{ SWITCH_V_CLOSED, Tile(gene::Vector2i(1, 3), false, false) },
 	{ SWITCH_V_OPEN, Tile(gene::Vector2i(2, 3), false, false) },
+
+	{ DEATH_ZONE, Tile(gene::Vector2i(0, 4), false, true) },
+
 };
 
 bool global::KeyPressed(gene::input::Keys key) {

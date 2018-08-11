@@ -32,7 +32,7 @@ namespace ld42 {
 		void Tick(const platform::GameTime& time);
 		
 		void Die();
-		void ThrowStone(float angle, float speed);
+		void ThrowStone(float angle, float speed, bool back);
 		void TurnLightOff(float time);
 		Vector3 Position;
 		Vector3 Velocity;

@@ -79,7 +79,7 @@ namespace ld42 {
 		}
 
 		virtual void GuiDraw() override {
-			if (ld42::DebugMode) {
+			if (true) {
 				ImGui::Begin("Assets");
 				if (ImGui::Button("Refresh Assets Directory")) {
 					ld42::CopyAssetsDirectory();

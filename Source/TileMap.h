@@ -5,11 +5,11 @@
 #include <Math/Vector2.h>
 #include <Graphics/Renderer2D.h>
 #include <Graphics/../../../ThirdParty/lodepng/lodepng.h>
-
+#include <Platform/Time.h>
 #include "Global.h"
 #include "Spritesheet.h"
 #include "Config.h"
-
+#include "Camera.h"
 namespace ld42 {
 	using namespace gene;
 
@@ -29,6 +29,7 @@ namespace ld42 {
 		unsigned w, h;
 		Array<unsigned int> Tiles;
 
+		platform::Timer waterTimer;
 		void Load(const String& string) {
 			std::vector<unsigned char> pixels;
 			lodepng::decode(pixels, w, h, string.c_str());
@@ -59,18 +60,41 @@ namespace ld42 {
 					Tiles[x + y * w] = id;
 				}
 			}
+			waterTimer.Start();
 		}
-
 		void Draw(graphics::Renderer2D* renderer) {
+			if (waterTimer.ElapsedTimeMs() > 500) {
+				for (int y = 0; y < h; ++y) {
+					for (int x = 0; x < w; ++x) {
+						unsigned int tile = Tiles[x + y * w];
+						if (tile == WATER_TOP_COL || tile == WATER_TOP_COL2)
+						{
+							if (tile == WATER_TOP_COL)
+								Tiles[x + y * w] = WATER_TOP_COL2;
+							else
+								Tiles[x + y * w] = WATER_TOP_COL;
+						}
+					}
+				}
+				waterTimer.Stop();
+				waterTimer.Start();
+			}
+
+			Camera *camera = global::MainCamera;
+
 			for (int y = 0; y < h; ++y) {
 				for (int x = 0; x < w; ++x) {
 					unsigned int tile = Tiles[x + y * w];
+					float ax = x * 16.f;
+					//float camWidth = global::Window->Width();
+					//if (ax < camera->Position.X || ax > camera->Position.X + camWidth) continue;
 					if (tile != 0) {
 						Vector2i t = global::TileTypes[tile].UV;
 						global::TilesSheet->DrawSprite({ x*16.f, y*16.f, 0.0f }, renderer, t.X, t.Y, 16.f, 16.f);
 					}
 				}
 			}
+
 		}
 	private:
 	};

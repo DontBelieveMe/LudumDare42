@@ -20,7 +20,7 @@ void Player::Die()
 	Position = Vector3(config::PlayerSpawnPoint.X, config::PlayerSpawnPoint.Y, 0.0f);
 }
 
-void Player::ThrowStone(float angle, float speed)
+void Player::ThrowStone(float angle, float speed, bool back)
 {
 	if (CurrentStone) 
 		delete CurrentStone;
@@ -30,6 +30,10 @@ void Player::ThrowStone(float angle, float speed)
 		speed * Maths::Cos(Maths::ToRadians(angle)),
 		-(speed * Maths::Sin(Maths::ToRadians(angle)))
 	};
+	
+	if (back)
+		CurrentStone->Velocity.X = -CurrentStone->Velocity.X;
+	
 	CurrentStone->Position = Vector2(Position.X, Position.Y+5);
 }
 
@@ -71,8 +75,10 @@ void Player::Tick(const platform::GameTime& time) {
 	auto mouse = global::Window->GetInputController()->GetMouseDevice();
 
 	if (mouse->IsButtonDown(input::MouseButton::Left)) {
-		if(StoneForce < 10.f)
+		if (StoneForce < 5.f) {
 			StoneForce += 0.1f;
+		}
+		global::MainCamera->Shake(1.0f, StoneForce/16.f);
 	}
 
 	global::MainCamera->Update();
@@ -92,18 +98,17 @@ void Player::Tick(const platform::GameTime& time) {
 		mousePos = mousePos + Vector2(global::MainCamera->Position.X, global::MainCamera->Position.Y);
 
 		Vector2 d = mousePos - posActual;
-		d.X = Maths::Absf(d.X);
+		//d.X = Maths::Absf(d.X);
 		d.Y = Maths::Absf(d.Y);
 
 		angle = Maths::Asin(d.Y / d.Length());
-
-		ThrowStone(Maths::ToDegrees(angle), force);
+		ThrowStone(Maths::ToDegrees(angle), force, d.X < 0);
 		StoneForce = 0;
 	}
 
 	if (CurrentStone) {
 		if (CurrentStone->Velocity.Y < 0.5f) {
-			CurrentStone->Velocity += config::Gravity/2;
+			CurrentStone->Velocity.Y += config::Gravity/2;
 		}
 
 		CurrentStone->Position = CurrentStone->Position + CurrentStone->Velocity * time.DeltaInMilliSeconds();
@@ -174,7 +179,6 @@ void Player::ResolveCollisions()
 					}
 				}
 			}
-
 
 			bool x1 = tilePos.X > Position.X + 16.f;
 			bool x2 = tilePos.X + 16.f < Position.X;
