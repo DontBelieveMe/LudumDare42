@@ -16,9 +16,12 @@ include_directories(${GeneLibDir}/Dependencies/FreeType/include)
 # Set your source files here
 set(Source
 	Source/Main.cc
+	Source/Utils.cc
+
+	Source/Utils.h
 )
 
-gene_add_target(${ProjectName} ${Source})
+gene_add_target(${ProjectName} "${Source}")
 gene_setup_engine_deps(${ProjectName})
 
 add_definitions(-DASSETS_DIRECTORY="${CMAKE_CURRENT_SOURCE_DIR}/Data/" -DASSETS_OUT_DIRECTORY="${CMAKE_CURRENT_BINARY_DIR}/Data/")
