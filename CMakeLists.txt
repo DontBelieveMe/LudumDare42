@@ -1,9 +1,11 @@
 cmake_minimum_required(VERSION 3.1)
 set(ProjectName Edison)
 
+include(GeneConfig.cmake)
+
 project(${ProjectName})
 
-set(GeneLibDir I:\\Dev\\GeneEngine\\GeneEngine)
+set(GeneLibDir ${GeneEngineDirectory})
 set(CMAKE_MODULE_PATH ${GeneLibDir}/Setup/CMake)
 add_subdirectory(${GeneLibDir} LibraryBuild)
 include(GeneBuild)
