@@ -18,6 +18,7 @@ set(Source
 	Source/Main.cc
 	Source/Utils.cc
 	Source/Global.cc
+	Source/Player.cc
 
 	Source/Utils.h
 	Source/Camera.h

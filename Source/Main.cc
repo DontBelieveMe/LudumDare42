@@ -14,7 +14,6 @@
 using namespace gene;
 
 namespace ld42 {
-
 	class LudumDare42App : public gene::App {
 		gene::graphics::Renderer2D m_2drenderer;
 		gene::graphics::Texture2D m_StoneTexture, m_CrateTexture;
@@ -33,8 +32,7 @@ namespace ld42 {
 			window->SetClearColor(gene::graphics::Color::Black/*gene::graphics::Color(79, 87, 99, 255)*/);
 
 			m_2drenderer.Init(Matrix4::Orthographic(window->Width(), 0.f, 0.f, window->Height(), 100.f, -1.0f));
-		
-			// Disable lighting
+
 			m_2drenderer.GetShader()->Enable();
 			m_2drenderer.GetShader()->LoadUniform1f("u_Ambient", 0.1f);
 			m_2drenderer.GetShader()->Disable();
