@@ -27,6 +27,7 @@ set(Source
 	Source/Player.h
 	Source/Spritesheet.h
 	Source/TileMap.h
+	Source/Level.h
 )
 
 gene_add_target(${ProjectName} "${Source}")

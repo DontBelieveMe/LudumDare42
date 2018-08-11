@@ -15,12 +15,13 @@ namespace ld42 {
 
 	class Tile {
 	public:
-		Tile(Vector2i uv, bool solid) : UV(uv), Solid(solid) {}
-		Tile() {}
+		Tile(Vector2i uv, bool solid, bool killsYou) : UV(uv), Solid(solid), KillsYou(killsYou) {}
+		Tile() : UV(), Solid(false), KillsYou(false) {}
 
 	public:
 		Vector2i UV;
 		bool Solid;
+		bool KillsYou;
 	};
 
 	class TileMap {

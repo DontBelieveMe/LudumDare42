@@ -45,7 +45,10 @@ uniform float            u_Ambient;
 void main()
 {
     int index = int(pass_SamplerIndex);
-	vec4 color = texture(u_Textures[index], pass_TextureUV) * vec4(pass_Color.xyz, 1.0f);
+	vec4 texCol = texture(u_Textures[index], pass_TextureUV);
+	if (index < 0)
+		texCol = vec4(1.0f, 1.0f, 1.0f, 1.0f);
+	vec4 color = texCol * vec4(pass_Color.xyz, 1.0f);
 
     vec4 ambient = vec4(u_Ambient,u_Ambient,u_Ambient,1.0f);
 	

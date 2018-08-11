@@ -11,6 +11,14 @@
 namespace ld42 {
 	using namespace gene;
 
+	struct Stone {
+	public:
+		Vector2 Velocity;
+		Vector2 Position;
+		
+	private:
+	};
+
 	class Player {
 	private:
 		void ResolveCollisions();
@@ -21,11 +29,15 @@ namespace ld42 {
 		Player();
 
 		void Draw(graphics::Renderer2D* renderer);
-
 		void Tick(const platform::GameTime& time);
 		
+		void Die();
+		void ThrowStone(float angle, float speed);
+
 		Vector3 Position;
 		Vector3 Velocity;
+
+		Stone* CurrentStone = nullptr;
 	private:
 
 	};

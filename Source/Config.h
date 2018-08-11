@@ -8,6 +8,7 @@ namespace ld42 {
 		extern float PlayerSpeed;
 		extern float JumpSpeed;
 		extern float AmbientLight;
+		extern float StoneThrowSpeed;
 		extern gene::Vector2 PlayerSpawnPoint;
 		extern gene::graphics::Light PlayerLight;
 
