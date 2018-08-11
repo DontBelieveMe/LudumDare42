@@ -53,7 +53,7 @@ void main()
 	for(int i=0;i<4;i++) {
 		if(u_Lights[i].Size > 0.f) {
             float dist = length(pass_Position.xy - u_Lights[i].Position.xy);
-            float percent = clamp(1.0f - dist / u_Lights[i].Size, 0.1, 1.0f);
+            float percent = clamp(1.0f - dist / u_Lights[i].Size, 0.0, 1.0f);
             percent *= pow(percent, u_Lights[i].Falloff) * u_Lights[i].Intensity;
             vec4 b = vec4(percent,percent,percent,percent) * vec4(u_Lights[i].Color, 1.0);
             totalB += b;
