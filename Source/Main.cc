@@ -14,6 +14,8 @@
 
 using namespace gene;
 
+#include <Windows.h>
+
 namespace ld42 {
 	class LudumDare42App : public gene::App {
 		gene::graphics::Renderer2D m_2drenderer;
@@ -25,6 +27,7 @@ namespace ld42 {
 	public:
 
 		virtual void Init() override {
+			FreeConsole();
 			using namespace gene;
 			ld42::CopyAssetsDirectory();
 
@@ -116,7 +119,7 @@ namespace ld42 {
 				m_uiRenderer.DrawString(&m_Font, title, Vector2((1280 / 2 - (size.X / 2)*1.5f) - 50.f, (720 / 2)-300), graphics::Color::White, graphics::TextAlignment::Centre);
 				m_uiRenderer.PopTransform();
 
-				String str = "A/D to move, Space to Jump\nSome switches can be toggled by throwing stones at them\n(aim with mouse and hold 'f', release to throw.\nThe longer you hold it down the faster you throw)\n\nYour task? Survive a single minute\nGood luck\n\nPress 't' to play.";
+				String str = "A/D to move, Space to Jump\nSome switches can be toggled by throwing stones at them\n(aim with mouse and hold down the left mouse button, release to throw.\nThe longer you hold it down the faster you throw)\n\nYour task? Survive a single minute\nGood luck\n\nPress 't' to play.";
 				size = m_Font.MeasureString(str);
 
 				m_uiRenderer.DrawString(&m_Font, str, Vector2(1280 / 2 - size.X / 2, 720 / 2), graphics::Color::White, graphics::TextAlignment::Centre);
@@ -161,7 +164,7 @@ namespace ld42 {
 		}
 
 		virtual void GuiDraw() override {
-			if (true) {
+			if (false) {
 				ImGui::Begin("Assets");
 				if (ImGui::Button("Refresh Assets Directory")) {
 					ld42::CopyAssetsDirectory();
