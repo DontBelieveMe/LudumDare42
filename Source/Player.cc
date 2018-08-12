@@ -4,6 +4,7 @@
 #include "Level.h"
 using namespace ld42;
 using namespace gene;
+platform::Timer hungerTimer;
 
 Player::Player() {
 	config::PlayerLight.Colour = graphics::Color(234, 121, 42, 255);
@@ -13,11 +14,13 @@ Player::Player() {
 	config::PlayerLight.Falloff = .9f;
 
 	Position = Vector3(config::PlayerSpawnPoint.X, config::PlayerSpawnPoint.Y, 0.0f);
+	hungerTimer.Start();
 }
 
 void Player::Die()
 {
 	Position = Vector3(config::PlayerSpawnPoint.X, config::PlayerSpawnPoint.Y, 0.0f);
+	Dead = true;
 }
 
 void Player::ThrowStone(float angle, float speed, bool back)
@@ -64,6 +67,16 @@ void Player::Draw(graphics::Renderer2D* renderer) {
 float StoneForce = 0;
 
 void Player::Tick(const platform::GameTime& time) {
+	if (hungerTimer.ElapsedTimeMs() > 750) {
+		Health -= 1;
+		hungerTimer.Stop();
+		hungerTimer.Start();
+	}
+
+	if (Health <= 0) {
+		Die();
+	}
+
 	if (lightOffTimer.Running()) {
 		if (lightOffTimer.ElapsedTimeMs() > lightOffTime) {
 			lightOffTimer.Stop();
@@ -98,7 +111,7 @@ void Player::Tick(const platform::GameTime& time) {
 		mousePos = mousePos + Vector2(global::MainCamera->Position.X, global::MainCamera->Position.Y);
 
 		Vector2 d = mousePos - posActual;
-		//d.X = Maths::Absf(d.X);
+		
 		d.Y = Maths::Absf(d.Y);
 
 		angle = Maths::Asin(d.Y / d.Length());

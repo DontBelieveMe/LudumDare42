@@ -27,8 +27,16 @@ namespace ld42 {
 	};
 
 	struct Level1 : Level {
+		graphics::Light *Light;
+
 		virtual void PreInit() {
 			FilePath = "Data/Levels/Level1.png";
+			Light = new graphics::Light;
+			Light->Position = Vector3(39 * 16, 11 * 16, 0.f);
+			Light->Colour = graphics::Color::White;
+			Light->Falloff = 1.0f;
+			Light->Intensity = 2.0f;
+			Light->Size = 200.f;
 		}
 
 		virtual void Init() 
@@ -71,6 +79,10 @@ namespace ld42 {
 
 		virtual void Draw(graphics::Renderer2D *renderer)
 		{
+			renderer->GetShader()->Enable();
+			renderer->LoadLight(Light, 1);
+			renderer->GetShader()->Disable();
+
 			Tiles->Draw(renderer);
 		}
 	};

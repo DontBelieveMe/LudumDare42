@@ -48,6 +48,11 @@ namespace ld42 {
 #define SWITCH_V_CLOSED 0xFF00DCFF
 #define SWITCH_V_OPEN 0x7F006EFF
 #define DEATH_ZONE 0xFF6A00FF
+
+#define CHEST_CLOSED 0x007F7FFF
+#define CHEST_OPEN 0x21007FFF
+#define SKULL 0x808080FF
+
 		extern gene::HashMap<unsigned int, Tile> TileTypes;
 	}
 }

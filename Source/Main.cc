@@ -19,6 +19,8 @@ namespace ld42 {
 		gene::graphics::Renderer2D m_2drenderer;
 		gene::graphics::Texture2D m_StoneTexture, m_CrateTexture;
 		ld42::Level *level1;
+		gene::graphics::Renderer2D m_uiRenderer;
+		gene::graphics::Font m_Font;
 
 	public:
 
@@ -34,14 +36,20 @@ namespace ld42 {
 			window->SetClearColor(graphics::Color::Black);
 
 			m_2drenderer.Init(Matrix4::Orthographic(window->Width(), 0.f, 0.f, window->Height(), 100.f, -1.0f));
+			m_uiRenderer.Init(Matrix4::Orthographic(window->Width(), 0.f, 0.f, window->Height(), 100.f, -1.0f));
+
+			m_uiRenderer.GetShader()->Enable();
+			m_uiRenderer.GetShader()->LoadUniform1f("u_Ambient", 1.0f);
+			m_uiRenderer.GetShader()->Disable();
+
+			m_Font.Load("Data/Fonts/BLKCHCRY.TTF", 9);
 
 			m_2drenderer.GetShader()->Enable();
-			m_2drenderer.GetShader()->LoadUniform1f("u_Ambient", 0.1f);
+			m_2drenderer.GetShader()->LoadUniform1f("u_Ambient", 1.0f);
 			m_2drenderer.GetShader()->Disable();
 
 			ld42::global::TilesSheet = new ld42::Spritesheet;
 			ld42::global::TilesSheet->Init("Data/Textures/Tiles.png");
-
 
 			level1 = new Level1();
 			level1->Load();
@@ -54,28 +62,58 @@ namespace ld42 {
 			
 			Array<graphics::Light*> lights;
 			lights.push_back(&ld42::config::PlayerLight);
+
 			m_2drenderer.LoadLights(lights);
 		}
 
 		virtual void Tick(const gene::platform::GameTime& time) override {
+			auto player = ld42::global::ThePlayer;
 			auto keyboard = ld42::global::Window->GetInputController()->GetKeyDevice();
-			auto mouse = ld42::global::Window->GetInputController()->GetMouseDevice();
-			level1->Update(time);
-			ld42::global::ThePlayer->Tick(time);
 
-			memcpy(ld42::global::LastKeyState, keyboard->GetKeyMap(), 62256);
-			global::LastMouseButtonState = mouse->GetRawButtonState();
+			if (!player->Dead) {
+				auto mouse = ld42::global::Window->GetInputController()->GetMouseDevice();
+				level1->Update(time);
+				ld42::global::ThePlayer->Tick(time);
+
+				memcpy(ld42::global::LastKeyState, keyboard->GetKeyMap(), 62256);
+				global::LastMouseButtonState = mouse->GetRawButtonState();
+			}
+			else {
+				if (global::KeyPressed(input::Keys::T)) {
+					player->Reset();
+				}
+			}
 		}
-
+		
+		Vector3 BarPos = Vector3(124, 10, 0.f);
+		
 		virtual void Draw() override {
-			m_2drenderer.SetViewMatrix(ld42::global::MainCamera->CalculateViewMatrix());
-			m_2drenderer.Begin();
-			m_2drenderer.PushTransform(gene::Matrix4::Scale((4.f)));
-			level1->Draw(&m_2drenderer);
-			ld42::global::ThePlayer->Draw(&m_2drenderer);
-			m_2drenderer.PopTransform();
-			m_2drenderer.End();
-			m_2drenderer.Present();
+			
+			auto player = ld42::global::ThePlayer;
+
+			if (!player->Dead) {
+				m_2drenderer.SetViewMatrix(ld42::global::MainCamera->CalculateViewMatrix());
+				m_2drenderer.Begin();
+				m_2drenderer.PushTransform(gene::Matrix4::Scale((4.f)));
+				level1->Draw(&m_2drenderer);
+				ld42::global::ThePlayer->Draw(&m_2drenderer);
+				m_2drenderer.PopTransform();
+				m_2drenderer.End();
+				m_2drenderer.Present();
+
+				m_uiRenderer.Begin();
+				m_uiRenderer.FillRectangle(BarPos, ld42::global::ThePlayer->Health, 25.f, graphics::Color::Red);
+				m_uiRenderer.DrawString(&m_Font, "Health", Vector2(10, 30), graphics::Color::White);
+				m_uiRenderer.End();
+				m_uiRenderer.Present();
+			}
+			else {
+				m_uiRenderer.Begin();
+				Vector2 size = m_Font.MeasureString("You died.\nHorrifically.\nPress any key to try again, I guess.");
+				m_uiRenderer.DrawString(&m_Font, "You died.\nHorrifically.\nAnd alone.\n\nPress 't' to try again, I guess.", Vector2(1280/2 - size.X/2, 720/2), graphics::Color::White, graphics::TextAlignment::Centre);
+				m_uiRenderer.End();
+				m_uiRenderer.Present();
+			}
 		}
 
 		virtual void GuiDraw() override {

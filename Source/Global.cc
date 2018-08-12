@@ -59,6 +59,10 @@ gene::HashMap<unsigned int, Tile> global::TileTypes = {
 	{ SWITCH_V_CLOSED, Tile(gene::Vector2i(1, 3), false, false) },
 	{ SWITCH_V_OPEN, Tile(gene::Vector2i(2, 3), false, false) },
 
+	{ CHEST_CLOSED, Tile(gene::Vector2i(3, 3), false, false) },
+	{ CHEST_OPEN, Tile(gene::Vector2i(4, 3), false, false) },
+	{ SKULL, Tile(gene::Vector2i(0, 5), false, false) },
+
 	{ DEATH_ZONE, Tile(gene::Vector2i(0, 4), false, true) },
 
 };
