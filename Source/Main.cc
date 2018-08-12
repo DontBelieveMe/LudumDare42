@@ -64,25 +64,43 @@ namespace ld42 {
 			lights.push_back(&ld42::config::PlayerLight);
 
 			m_2drenderer.LoadLights(lights);
+
+			ld42::global::GlobalFont = &m_Font;
 		}
 
 		virtual void Tick(const gene::platform::GameTime& time) override {
 			auto player = ld42::global::ThePlayer;
 			auto keyboard = ld42::global::Window->GetInputController()->GetKeyDevice();
+			auto mouse = ld42::global::Window->GetInputController()->GetMouseDevice();
 
-			if (!player->Dead) {
-				auto mouse = ld42::global::Window->GetInputController()->GetMouseDevice();
-				level1->Update(time);
-				ld42::global::ThePlayer->Tick(time);
-
-				memcpy(ld42::global::LastKeyState, keyboard->GetKeyMap(), 62256);
-				global::LastMouseButtonState = mouse->GetRawButtonState();
-			}
-			else {
+			if (global::TheGameState == global::GameState::MainMenu) {
 				if (global::KeyPressed(input::Keys::T)) {
-					player->Reset();
+					global::TheGameState = global::GameState::Playing;
+					ld42::global::ThePlayer->Load();
 				}
 			}
+			else {
+				if (global::GameWon) {
+					if (global::KeyPressed(input::Keys::T)) {
+						exit(0);
+					}
+					return;
+				}
+
+				if (!player->Dead) {
+					level1->Update(time);
+					ld42::global::ThePlayer->Tick(time);
+
+				}
+				else {
+					if (global::KeyPressed(input::Keys::T)) {
+						player->Reset();
+					}
+				}
+			}
+			
+			memcpy(ld42::global::LastKeyState, keyboard->GetKeyMap(), 62256);
+			global::LastMouseButtonState = mouse->GetRawButtonState();
 		}
 		
 		Vector3 BarPos = Vector3(124, 10, 0.f);
@@ -90,29 +108,55 @@ namespace ld42 {
 		virtual void Draw() override {
 			
 			auto player = ld42::global::ThePlayer;
-
-			if (!player->Dead) {
-				m_2drenderer.SetViewMatrix(ld42::global::MainCamera->CalculateViewMatrix());
-				m_2drenderer.Begin();
-				m_2drenderer.PushTransform(gene::Matrix4::Scale((4.f)));
-				level1->Draw(&m_2drenderer);
-				ld42::global::ThePlayer->Draw(&m_2drenderer);
-				m_2drenderer.PopTransform();
-				m_2drenderer.End();
-				m_2drenderer.Present();
-
+			if (global::TheGameState == global::GameState::MainMenu) {
 				m_uiRenderer.Begin();
-				m_uiRenderer.FillRectangle(BarPos, ld42::global::ThePlayer->Health, 25.f, graphics::Color::Red);
-				m_uiRenderer.DrawString(&m_Font, "Health", Vector2(10, 30), graphics::Color::White);
+				String title = "Running out of space (and more importantly, food)";
+				Vector2 size = m_Font.MeasureString(title);
+				m_uiRenderer.PushTransform(Matrix4::Scale(1.5f));
+				m_uiRenderer.DrawString(&m_Font, title, Vector2((1280 / 2 - (size.X / 2)*1.5f) - 50.f, (720 / 2)-300), graphics::Color::White, graphics::TextAlignment::Centre);
+				m_uiRenderer.PopTransform();
+
+				String str = "A/D to move, Space to Jump\nSome switches can be toggled by throwing stones at them\n(aim with mouse and hold 'f', release to throw.\nThe longer you hold it down the faster you throw)\n\nYour task? Survive a single minute\nGood luck\n\nPress 't' to play.";
+				size = m_Font.MeasureString(str);
+
+				m_uiRenderer.DrawString(&m_Font, str, Vector2(1280 / 2 - size.X / 2, 720 / 2), graphics::Color::White, graphics::TextAlignment::Centre);
 				m_uiRenderer.End();
 				m_uiRenderer.Present();
 			}
 			else {
-				m_uiRenderer.Begin();
-				Vector2 size = m_Font.MeasureString("You died.\nHorrifically.\nPress any key to try again, I guess.");
-				m_uiRenderer.DrawString(&m_Font, "You died.\nHorrifically.\nAnd alone.\n\nPress 't' to try again, I guess.", Vector2(1280/2 - size.X/2, 720/2), graphics::Color::White, graphics::TextAlignment::Centre);
-				m_uiRenderer.End();
-				m_uiRenderer.Present();
+				if (global::GameWon) {
+					m_uiRenderer.Begin();
+					String str = "You Won!\nWell done!\nLooks like you didn't _run out of space_\n :D\n\nPress 't' to exit game.";
+					Vector2 size = m_Font.MeasureString(str);
+					m_uiRenderer.DrawString(&m_Font, str, Vector2(1280 / 2 - size.X / 2, 720 / 2), graphics::Color::White, graphics::TextAlignment::Centre);
+					m_uiRenderer.End();
+					m_uiRenderer.Present();
+					return;
+				}
+
+				if (!player->Dead) {
+					m_2drenderer.SetViewMatrix(ld42::global::MainCamera->CalculateViewMatrix());
+					m_2drenderer.Begin();
+					m_2drenderer.PushTransform(gene::Matrix4::Scale((4.f)));
+					level1->Draw(&m_2drenderer);
+					ld42::global::ThePlayer->Draw(&m_2drenderer);
+					m_2drenderer.PopTransform();
+					m_2drenderer.End();
+					m_2drenderer.Present();
+
+					m_uiRenderer.Begin();
+					m_uiRenderer.FillRectangle(BarPos, ld42::global::ThePlayer->Health, 25.f, graphics::Color::Red);
+					m_uiRenderer.DrawString(&m_Font, "Health", Vector2(10, 30), graphics::Color::White);
+					m_uiRenderer.End();
+					m_uiRenderer.Present();
+				}
+				else {
+					m_uiRenderer.Begin();
+					Vector2 size = m_Font.MeasureString("You died.\nHorrifically.\nPress any key to try again, I guess.");
+					m_uiRenderer.DrawString(&m_Font, "You died.\nHorrifically.\nAnd alone.\n\nPress 't' to try again, I guess.", Vector2(1280 / 2 - size.X / 2, 720 / 2), graphics::Color::White, graphics::TextAlignment::Centre);
+					m_uiRenderer.End();
+					m_uiRenderer.Present();
+				}
 			}
 		}
 
@@ -136,6 +180,10 @@ namespace ld42 {
 
 				if (ImGui::Button("Reset player to spawn")) {
 					global::ThePlayer->Position = Vector3(config::PlayerSpawnPoint.X, config::PlayerSpawnPoint.Y, 0.0f);
+				}
+
+				if (ImGui::Button("CLick to toggle player death")) {
+					global::ThePlayer->DiesOfHunger = !global::ThePlayer->DiesOfHunger;
 				}
 				ImGui::Separator();
 				ImGui::Text("Game");

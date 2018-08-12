@@ -5,8 +5,38 @@
 using namespace ld42;
 using namespace gene;
 platform::Timer hungerTimer;
+#include <Audio/WaveFile.h>
+#include <Audio/AudioSystem.h>
+
+audio::WaveFile *walking = new audio::WaveFile;
+audio::WaveFile *fireCrackling = new audio::WaveFile;
+audio::AudioSystem *audioSystem = new audio::AudioSystem;
+
+platform::Timer gameWinTimer;
+
+void Player::Reset()
+{
+	Health = 100.0f;
+	Position = Vector3(config::PlayerSpawnPoint.X, config::PlayerSpawnPoint.Y, 0.0f);
+	Dead = false;
+	Velocity.X = 0.0f;
+	Velocity.Y = 0.0f;
+	if (CurrentStone) 
+		delete CurrentStone;
+	
+	CurrentStone = nullptr;
+	HungerDepletionAmount = 1.0f;
+	audioSystem->PlayWav(walking);
+	audioSystem->PlayWav(fireCrackling);
+	gameWinTimer.Stop();
+	gameWinTimer.Start();
+}
 
 Player::Player() {
+}
+
+void ld42::Player::Load()
+{
 	config::PlayerLight.Colour = graphics::Color(234, 121, 42, 255);
 	config::PlayerLight.Position = Position;
 	config::PlayerLight.Size = 300.0f;
@@ -15,11 +45,28 @@ Player::Player() {
 
 	Position = Vector3(config::PlayerSpawnPoint.X, config::PlayerSpawnPoint.Y, 0.0f);
 	hungerTimer.Start();
+
+	audioSystem->Init();
+
+	fireCrackling->Load("Data/SFX/fire.wav");
+	fireCrackling->Loop(true);
+	fireCrackling->SetGain(0.3f);
+
+	walking->Load("Data/SFX/walk.wav");
+	walking->Loop(true);
+	walking->SetGain(0.0f);
+
+	audioSystem->PlayWav(fireCrackling);
+	audioSystem->PlayWav(walking);
+	gameWinTimer.Start();
 }
 
 void Player::Die()
 {
 	Position = Vector3(config::PlayerSpawnPoint.X, config::PlayerSpawnPoint.Y, 0.0f);
+	audioSystem->StopWav(walking);
+	audioSystem->StopWav(fireCrackling);
+	gameWinTimer.Stop();
 	Dead = true;
 }
 
@@ -51,6 +98,9 @@ void ld42::Player::TurnLightOff(float time)
 	config::PlayerLight.Size = 0.0f;
 }
 
+Vector2 FloatingTextPos;
+String FloatingText;
+
 void Player::Draw(graphics::Renderer2D* renderer) {
 	global::TilesSheet->DrawSprite(Position, renderer, 0.0f, 1.0f, 16.0f, 16.0f);
 
@@ -62,13 +112,24 @@ void Player::Draw(graphics::Renderer2D* renderer) {
 
 	if (CurrentStone)
 		global::TilesSheet->DrawSprite(Vector3(CurrentStone->Position.X, CurrentStone->Position.Y, 0.0f), renderer, 0.f, 3.f, 16.f,16.f);
+
+	if (FloatingTextPos.X > 0) {
+		renderer->PopTransform();
+		FloatingTextPos = FloatingTextPos * 4.f;
+		renderer->DrawString(global::GlobalFont, FloatingText, FloatingTextPos, graphics::Color::White, graphics::TextAlignment::Centre);
+		renderer->PushTransform(Matrix4::Scale(4.0f));
+	}
 }
 
 float StoneForce = 0;
 
 void Player::Tick(const platform::GameTime& time) {
-	if (hungerTimer.ElapsedTimeMs() > 750) {
-		Health -= 1;
+	if (gameWinTimer.ElapsedTimeMs() > 1000 * 60) {
+		global::GameWon = true;
+	}
+
+	if (hungerTimer.ElapsedTimeMs() > 750 && DiesOfHunger) {
+		Health -= HungerDepletionAmount*(gameWinTimer.ElapsedTimeSeconds()/2);
 		hungerTimer.Stop();
 		hungerTimer.Start();
 	}
@@ -139,12 +200,15 @@ void Player::Tick(const platform::GameTime& time) {
 	if (true) {
 		if (keyboard->IsKeyPressed(input::Keys::D)) {
 			Velocity.X = config::PlayerSpeed;
+			walking->SetGain(0.3f);
 		}
 		else if (keyboard->IsKeyPressed(input::Keys::A)) {
 			Velocity.X = -config::PlayerSpeed;
+			walking->SetGain(0.3f);
 		}
 		else {
 			Velocity.X = 0.0f;
+			walking->SetGain(0.0f);
 		}
 	}
 
@@ -167,11 +231,35 @@ void Player::Tick(const platform::GameTime& time) {
 	camera->Position.Y = Position.Y * 4.f - (camHeight / 2) + 32;
 }
 
+platform::Timer handSwitchTimer;
+bool turningOn;
+
 void Player::ResolveCollisions() 
 {
+	if (handSwitchTimer.ElapsedTimeMs() > 500.f && handSwitchTimer.Running()) {
+		handSwitchTimer.Stop();
+		TurnLightOff(1000.f);
+
+		//74, 1/2
+
+		// Doing the action
+		if (turningOn) {
+			global::ActiveLevel->Tiles->Tiles[74 + 1 * global::ActiveLevel->Tiles->w] = 0;
+			global::ActiveLevel->Tiles->Tiles[74 + 2 * global::ActiveLevel->Tiles->w] = 0;
+
+			global::ActiveLevel->Tiles->Tiles[70 + 3 * global::ActiveLevel->Tiles->w] = STONE_FLOOR_TOP_COL;
+			global::ActiveLevel->Tiles->Tiles[71 + 3 * global::ActiveLevel->Tiles->w] = STONE_FLOOR_TOP_COL;
+			global::ActiveLevel->Tiles->Tiles[70 + 4 * global::ActiveLevel->Tiles->w] = STONE_MIDDLE1;
+			global::ActiveLevel->Tiles->Tiles[71 + 4 * global::ActiveLevel->Tiles->w] = STONE_MIDDLE1;
+		}
+	}
+
 	const float tilesize = TILE_SIZE;
 	static Vector3 halfSize(8.0f, 8.0f, 0.0f);
-
+	bool hitFood = false;
+	bool hitSwitch = false;
+	float fx, fy;
+	bool dying = false;
 	for (int y = 0; y < global::ActiveLevel->Tiles->h; ++y) {
 		for (int x = 0; x < global::ActiveLevel->Tiles->w; ++x) {
 			unsigned int tileID = global::ActiveLevel->Tiles->Tiles[x + y * global::ActiveLevel->Tiles->w];
@@ -201,11 +289,49 @@ void Player::ResolveCollisions()
 
 			bool collision = !(x1 || x2 || y1 || y2);
 
-
 			if (collision) {
-				if (tile.KillsYou) {
+				if (tileID == GRASS_FOOD && Health < 95.f) {
+					hitFood = true;
+					fx = x;
+					fy = y;
+
+					if (global::KeyPressed(input::Keys::E)) {
+						global::ActiveLevel->Tiles->Tiles[x + y * global::ActiveLevel->Tiles->w] = 0.f;
+						Health += Health + 10.f > 100.f ? 100 - Health : 10.f;
+						FloatingTextPos.Set(-1.0f);
+						FloatingText = "";
+						continue;
+					}
+
+					continue;
+				}
+
+				if (tileID == SWITCH_H_CLOSED) {
+					hitSwitch = true;
+					fx = x;
+					fy = y;
+					if (global::KeyPressed(input::Keys::E)) {
+						global::MainCamera->Shake(2500, 0.5f);
+						handSwitchTimer.Start();
+						/*if (tileID == SWITCH_H_OPEN) {
+							global::ActiveLevel->Tiles->Tiles[x + y * global::ActiveLevel->Tiles->w] = SWITCH_H_CLOSED;
+							turningOn = false;
+							}*/
+						global::ActiveLevel->Tiles->Tiles[x + y * global::ActiveLevel->Tiles->w] = SWITCH_H_OPEN;
+						turningOn = true;
+					}
+					continue;
+				}
+
+				if (tileID == DEATH_ZONE) {
 					Die();
 					return;
+				}
+
+				if (tile.KillsYou) {
+					HungerDepletionAmount = 40.f;			
+					dying = true;
+					if (tileID == DEATH_ZONE) return;
 				}
 
 				if (!tile.Solid) continue;
@@ -239,5 +365,22 @@ void Player::ResolveCollisions()
 				}
 			}
 		}
+	}
+
+	if (!dying) {
+		HungerDepletionAmount = 1.0f;
+	}
+
+	if (hitSwitch) {
+		float strW = global::GlobalFont->MeasureString("'E' To Open").X;
+		FloatingTextPos = Vector2((fx*16.f) - ((strW / 4) / 2.f), fy*16.f);
+		FloatingText = "'E' To Open";
+	} else if (hitFood) {
+		float strW = global::GlobalFont->MeasureString("'E' To Eat").X;
+		FloatingTextPos = Vector2((fx*16.f)-((strW/4)/2.f), fy*16.f);
+		FloatingText = "'E' To Eat";
+	}
+	else {
+		FloatingTextPos.Set(-1);
 	}
 }

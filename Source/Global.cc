@@ -40,8 +40,10 @@ gene::input::Key global::LastKeyState[62256];
 Player *global::ThePlayer = nullptr;
 Level* global::ActiveLevel = nullptr;
 Camera*  global::MainCamera = nullptr;
-
+gene::graphics::Font* global::GlobalFont = nullptr;
 gene::input::MouseButton global::LastMouseButtonState = gene::input::MouseButton::None;
+bool global::GameWon = false;
+global::GameState global::TheGameState = global::GameState::MainMenu;
 
 gene::HashMap<unsigned int, Tile> global::TileTypes = {
 	{ STONE_FLOOR_TOP_COL, Tile(gene::Vector2i(0, 0), true, false) },
@@ -50,21 +52,26 @@ gene::HashMap<unsigned int, Tile> global::TileTypes = {
 	{ STONE_OVERHANG_LEFT1, Tile(gene::Vector2i(3, 0), true, false) },
 	{ STONE_OVERHANG_RIGHT2, Tile(gene::Vector2i(4, 0), true, false) },
 	{ STONE_OVERHANG_LEFT2, Tile(gene::Vector2i(5, 0), true, false) },
-
+	{ STONE_MIDDLE1, Tile(Tile(gene::Vector2i(6, 0), true, false))},
+	
 	{ WATER_TOP_COL, Tile(gene::Vector2i(0, 2), false,true) },
 	{ WATER_TOP_COL2, Tile(gene::Vector2i(2, 2), false,true) },
 
-	{ WATER_BOTTOM_COL, Tile(gene::Vector2i(1, 2), false,true) },
+	{ WATER_BOTTOM_COL, Tile(gene::Vector2i(1, 2), true,false) },
 
 	{ SWITCH_V_CLOSED, Tile(gene::Vector2i(1, 3), false, false) },
 	{ SWITCH_V_OPEN, Tile(gene::Vector2i(2, 3), false, false) },
 
+	{ SWITCH_H_CLOSED, Tile(gene::Vector2i(5, 3), false, false) },
+	{ SWITCH_H_OPEN, Tile(gene::Vector2i(6, 3), false, false) },
+
+
 	{ CHEST_CLOSED, Tile(gene::Vector2i(3, 3), false, false) },
 	{ CHEST_OPEN, Tile(gene::Vector2i(4, 3), false, false) },
 	{ SKULL, Tile(gene::Vector2i(0, 5), false, false) },
+	{ GRASS_FOOD, Tile(gene::Vector2i(1, 5), false, false) },
 
-	{ DEATH_ZONE, Tile(gene::Vector2i(0, 4), false, true) },
-
+	{ DEATH_ZONE, Tile(gene::Vector2i(0, 4), false, true) }
 };
 
 bool global::KeyPressed(gene::input::Keys key) {

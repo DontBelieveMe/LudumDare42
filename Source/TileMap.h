@@ -81,20 +81,26 @@ namespace ld42 {
 			}
 
 			Camera *camera = global::MainCamera;
-
+			int i = 0;
 			for (int y = 0; y < h; ++y) {
 				for (int x = 0; x < w; ++x) {
 					unsigned int tile = Tiles[x + y * w];
 					float ax = x * 16.f;
-					//float camWidth = global::Window->Width();
-					//if (ax < camera->Position.X || ax > camera->Position.X + camWidth) continue;
+					
+					float camWidth = global::Window->Width() / 4.f;
+					float camX = camera->Position.X / 4.0f;
+
+					if (ax+16 < camX || ax >camX + camWidth)
+						continue;
+
 					if (tile != 0) {
 						Vector2i t = global::TileTypes[tile].UV;
 						global::TilesSheet->DrawSprite({ x*16.f, y*16.f, 0.0f }, renderer, t.X, t.Y, 16.f, 16.f);
+						i++;
 					}
 				}
 			}
-
+			LOG(LogLevel::Debug, "TileMap: Drawing ", i, " Tiles");
 		}
 	private:
 	};

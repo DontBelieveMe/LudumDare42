@@ -27,6 +27,7 @@ namespace ld42 {
 		bool OnGround = false;
 
 		Player();
+		void Load();
 
 		void Draw(graphics::Renderer2D* renderer);
 		void Tick(const platform::GameTime& time);
@@ -41,16 +42,11 @@ namespace ld42 {
 
 		float Health = 100;
 		bool Dead = false;
+		bool DiesOfHunger = true;
+		
+		float HungerDepletionAmount = 1.0f;
 
-		void Reset() {
-			Health = 100.0f;
-			Position = Vector3(config::PlayerSpawnPoint.X, config::PlayerSpawnPoint.Y, 0.0f);
-			Dead = false;
-			Velocity.X = 0.0f;
-			Velocity.Y = 0.0f;
-			if (CurrentStone) delete CurrentStone;
-			CurrentStone = nullptr;
-		}
+		void Reset();
 	private:
 
 	};
