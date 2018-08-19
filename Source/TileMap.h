@@ -100,7 +100,6 @@ namespace ld42 {
 					}
 				}
 			}
-			LOG(LogLevel::Debug, "TileMap: Drawing ", i, " Tiles");
 		}
 	private:
 	};

@@ -27,9 +27,8 @@ namespace ld42 {
 	public:
 
 		virtual void Init() override {
-			FreeConsole();
 			using namespace gene;
-			ld42::CopyAssetsDirectory();
+			//ld42::CopyAssetsDirectory();
 
 			platform::Window *window = GetWindow();
 			ld42::global::Window = window;

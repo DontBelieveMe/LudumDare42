@@ -13,6 +13,7 @@ audio::WaveFile *fireCrackling = new audio::WaveFile;
 audio::AudioSystem *audioSystem = new audio::AudioSystem;
 
 platform::Timer gameWinTimer;
+platform::Timer aliveTimer;
 
 void Player::Reset()
 {
@@ -30,6 +31,10 @@ void Player::Reset()
 	audioSystem->PlayWav(fireCrackling);
 	gameWinTimer.Stop();
 	gameWinTimer.Start();
+
+	aliveTimer.Stop();
+	aliveTimer.Start();
+	global::ActiveLevel->Load();
 }
 
 Player::Player() {
@@ -59,6 +64,7 @@ void ld42::Player::Load()
 	audioSystem->PlayWav(fireCrackling);
 	audioSystem->PlayWav(walking);
 	gameWinTimer.Start();
+	aliveTimer.Start();
 }
 
 void Player::Die()
@@ -129,7 +135,7 @@ void Player::Tick(const platform::GameTime& time) {
 	}
 
 	if (hungerTimer.ElapsedTimeMs() > 750 && DiesOfHunger) {
-		Health -= HungerDepletionAmount*(gameWinTimer.ElapsedTimeSeconds()/2);
+		Health -= HungerDepletionAmount*(aliveTimer.ElapsedTimeSeconds()/2);
 		hungerTimer.Stop();
 		hungerTimer.Start();
 	}
@@ -297,9 +303,12 @@ void Player::ResolveCollisions()
 
 					if (global::KeyPressed(input::Keys::E)) {
 						global::ActiveLevel->Tiles->Tiles[x + y * global::ActiveLevel->Tiles->w] = 0.f;
-						Health += Health + 10.f > 100.f ? 100 - Health : 10.f;
+						const float amt = 15.f;
+						Health += Health + amt > 100.f ? 100 - Health : amt;
 						FloatingTextPos.Set(-1.0f);
 						FloatingText = "";
+						aliveTimer.Stop();
+						aliveTimer.Start();
 						continue;
 					}
 
